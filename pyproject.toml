@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "multi-provider-llm-security-gateway"
+version = "0.1.0"
+description = "Tenant-aware OpenAI-compatible LLM security gateway"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115,<1", "uvicorn[standard]>=0.34,<1", "httpx>=0.28,<1",
+  "pydantic-settings>=2.7,<3", "aiosqlite>=0.21,<1", "redis>=5.2,<8",
+  "PyYAML>=6.0.2,<7", "prometheus-client>=0.21,<1",
+]
+
+[project.optional-dependencies]
+browser = ["playwright>=1.63,<2"]
+dev = ["pytest>=8.3,<10", "pytest-asyncio>=0.25,<2", "pytest-cov>=6,<8", "fakeredis[lua]>=2.28,<3", "ruff>=0.11,<1", "mypy>=1.15,<2", "types-PyYAML>=6", "pip-audit>=2.8,<3"]
+
+[project.scripts]
+llm-gateway = "gateway.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["gateway*"]
+
+[tool.setuptools.package-data]
+gateway = ["*.html", "*.js", "*.css"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["gateway"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "--strict-markers"
+
+[tool.coverage.run]
+source = ["gateway"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 85

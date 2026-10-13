@@ -1,0 +1,78 @@
+name: llm-security-gateway
+services:
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "always", "--maxmemory-policy", "noeviction"]
+    volumes: ["redis-data:/data"]
+    networks: [backend]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+  mock-provider:
+    build: .
+    command: ["llm-gateway", "mock", "--host", "0.0.0.0"]
+    networks: [backend]
+    read_only: true
+    tmpfs: [/tmp]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  seed:
+    build: .
+    command: ["llm-gateway", "seed-demo"]
+    environment:
+      GATEWAY_IDENTITY_BACKEND: redis
+      GATEWAY_REDIS_URL: redis://redis:6379/0
+    volumes: ["./data:/app/data"]
+    networks: [backend]
+    depends_on:
+      redis: {condition: service_healthy}
+    profiles: [setup]
+  api:
+    build: .
+    environment:
+      GATEWAY_REDIS_URL: redis://redis:6379/0
+      GATEWAY_PROVIDERS_FILE: config/providers-compose.yaml
+    ports: ["127.0.0.1:8000:8000"]
+    networks: [backend, observability]
+    read_only: true
+    tmpfs: [/tmp]
+    depends_on:
+      redis: {condition: service_healthy}
+      mock-provider: {condition: service_healthy}
+    restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    user: "10001:10001"
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./data/operator.key:/run/secrets/operator_key:ro
+    tmpfs: ["/prometheus:uid=10001,gid=10001,mode=0700"]
+    ports: ["127.0.0.1:9090:9090"]
+    networks: [observability]
+    depends_on: [api]
+  grafana:
+    image: grafana/grafana:12.1.0
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+    volumes:
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["127.0.0.1:3000:3000"]
+    networks: [observability]
+    depends_on: [prometheus]
+networks:
+  backend: {internal: true}
+  observability: {}
+volumes:
+  redis-data: {}

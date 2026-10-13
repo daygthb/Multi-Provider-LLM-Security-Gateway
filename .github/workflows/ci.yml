@@ -1,0 +1,37 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --constraint requirements.lock --upgrade pip
+      - run: python -m pip install --constraint requirements.lock '.[dev]'
+      - run: ruff check . && ruff format --check .
+      - run: mypy gateway
+      - run: pytest --cov=gateway --cov-report=xml --cov-report=term-missing
+      - run: pip-audit --skip-editable
+      - run: python scripts/verify_manifests.py
+      - name: Kubernetes schema validation
+        run: |
+          curl -fsSL https://github.com/yannh/kubeconform/releases/download/v0.7.0/kubeconform-linux-amd64.tar.gz | tar xz kubeconform
+          ./kubeconform -strict -summary -ignore-missing-schemas deploy/kubernetes
+      - run: docker build -t llm-gateway:ci .
+      - name: Compose integration
+        run: |
+          mkdir -p data
+          chmod 777 data
+          docker compose up -d redis mock-provider
+          docker compose --profile setup run --rm seed
+          docker compose up -d --wait api prometheus grafana
+          docker compose run --rm --no-deps -v ./scripts:/app/scripts:ro -v ./data:/app/data:ro -e GATEWAY_DEMO_URL=http://api:8000 api python scripts/smoke_demo.py --existing
+          docker compose run --rm --no-deps -v ./scripts:/app/scripts:ro api python scripts/verify_live_backends.py
+          python scripts/verify_redis_recovery.py
+      - if: always()
+        run: docker compose down

@@ -1,0 +1,11 @@
+{
+  "title": "LLM Security Gateway", "uid": "llm-gateway", "schemaVersion": 39,
+  "version": 1, "refresh": "15s", "time": {"from": "now-1h", "to": "now"},
+  "panels": [
+    {"id": 1, "title": "Requests per second", "type": "timeseries", "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8}, "datasource": {"type": "prometheus", "uid": "gateway-prometheus"}, "targets": [{"expr": "sum(rate(gateway_requests_total[5m]))", "refId": "A"}]},
+    {"id": 2, "title": "Blocks and quota rejections", "type": "timeseries", "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8}, "datasource": {"type": "prometheus", "uid": "gateway-prometheus"}, "targets": [{"expr": "sum(rate(gateway_blocked_requests_total[5m]))", "refId": "A"}, {"expr": "sum(rate(gateway_rate_limit_rejections_total[5m]))", "refId": "B"}]},
+    {"id": 3, "title": "Provider p95 attempt latency", "type": "timeseries", "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8}, "datasource": {"type": "prometheus", "uid": "gateway-prometheus"}, "targets": [{"expr": "histogram_quantile(0.95, sum by (le, provider) (rate(gateway_provider_latency_seconds_bucket[5m])))", "refId": "A"}]},
+    {"id": 4, "title": "Fallback selections", "type": "stat", "gridPos": {"x": 12, "y": 8, "w": 6, "h": 8}, "datasource": {"type": "prometheus", "uid": "gateway-prometheus"}, "targets": [{"expr": "gateway_fallback_usage_total", "refId": "A"}]},
+    {"id": 5, "title": "Estimated cost (USD)", "type": "stat", "gridPos": {"x": 18, "y": 8, "w": 6, "h": 8}, "datasource": {"type": "prometheus", "uid": "gateway-prometheus"}, "targets": [{"expr": "gateway_estimated_cost_dollars_total", "refId": "A"}]}
+  ]
+}

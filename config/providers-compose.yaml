@@ -1,0 +1,11 @@
+providers:
+  - name: mock-primary
+    kind: mock
+    base_url: http://mock-provider:8001
+    models: {mock-model: mock-model}
+    priority: 0
+  - name: mock-fallback
+    kind: mock
+    base_url: http://mock-provider:8001
+    models: {mock-model: mock-model}
+    priority: 1

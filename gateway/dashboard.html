@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gateway operator console</title><link rel="stylesheet" href="/dashboard.css"></head>
+<body><main><p class="eyebrow">MULTI PROVIDER LLM SECURITY GATEWAY</p><h1>Operator console</h1>
+<p>Request counts, quota rejections, provider health, latency and estimated cost. Prompt content is never displayed.</p>
+<label for="key">Operator API key</label><input id="key" type="password" autocomplete="off" placeholder="gw_…">
+<button id="connect">Refresh metrics</button><p id="status" role="status">Enter an operator key to connect.</p>
+<h2>Metrics</h2><dl id="metrics"></dl><h2>Providers</h2><div id="providers"></div>
+<p class="footnote">Keys stay in this page's memory and are cleared on reload. Use HTTPS outside localhost.</p>
+</main><script src="/dashboard.js"></script></body></html>

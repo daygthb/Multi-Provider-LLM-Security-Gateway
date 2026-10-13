@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: mock-provider, namespace: llm-gateway}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: mock-provider}
+  template:
+    metadata:
+      labels: {app: mock-provider}
+    spec:
+      automountServiceAccountToken: false
+      securityContext: {runAsNonRoot: true, runAsUser: 10001, seccompProfile: {type: RuntimeDefault}}
+      containers:
+        - name: mock
+          image: llm-gateway:0.1.0
+          command: [llm-gateway, mock, --host, 0.0.0.0]
+          ports: [{containerPort: 8001, name: http}]
+          resources:
+            requests: {cpu: 100m, memory: 64Mi}
+            limits: {cpu: 500m, memory: 256Mi}
+          securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+          readinessProbe: {httpGet: {path: /health, port: http}, periodSeconds: 10}
+          livenessProbe: {httpGet: {path: /health, port: http}, periodSeconds: 15}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: mock-provider, namespace: llm-gateway}
+spec:
+  selector: {app: mock-provider}
+  ports: [{port: 8001, targetPort: http}]

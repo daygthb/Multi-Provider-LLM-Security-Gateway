@@ -1,0 +1,8 @@
+services:
+  api:
+    environment:
+      GATEWAY_PROVIDERS_FILE: config/providers-ollama.yaml
+      GATEWAY_UPSTREAM_TIMEOUT: "120"
+      GATEWAY_REQUEST_TIMEOUT: "180"
+    volumes:
+      - ./config/providers-ollama.yaml:/app/config/providers-ollama.yaml:ro

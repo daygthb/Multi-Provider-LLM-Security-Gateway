@@ -1,0 +1,18 @@
+# Optional Docker Desktop local model routes. No paid credentials are required.
+providers:
+  - name: local-ollama
+    kind: ollama
+    base_url: http://host.docker.internal:11434
+    models:
+      qwen2.5-coder:7b: qwen2.5-coder:7b
+    priority: 0
+  - name: mock-primary
+    kind: mock
+    base_url: http://mock-provider:8001
+    models: {mock-model: mock-model}
+    priority: 0
+  - name: mock-fallback
+    kind: mock
+    base_url: http://mock-provider:8001
+    models: {mock-model: mock-model}
+    priority: 1

@@ -1,0 +1,16 @@
+# Optional example: mount a replacement providers file and inject secrets externally.
+providers:
+  - name: openai
+    kind: openai
+    base_url: https://api.openai.com
+    api_key_env: OPENAI_API_KEY
+    models: {your-public-model: your-provider-model}
+    priority: 0
+    # Set current published prices for the chosen model; zero disables meaningful cost estimates.
+    input_cost_per_million: 0
+    output_cost_per_million: 0
+  - name: ollama
+    kind: ollama
+    base_url: http://ollama:11434
+    models: {your-public-model: your-installed-ollama-model}
+    priority: 1

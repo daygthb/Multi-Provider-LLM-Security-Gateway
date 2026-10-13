@@ -1,0 +1,17 @@
+providers:
+  - name: mock-primary
+    kind: mock
+    base_url: http://127.0.0.1:8001
+    models:
+      mock-model: mock-model
+    priority: 0
+    input_cost_per_million: 0
+    output_cost_per_million: 0
+  - name: mock-fallback
+    kind: mock
+    base_url: http://127.0.0.1:8001
+    models:
+      mock-model: mock-model
+    priority: 1
+    input_cost_per_million: 0
+    output_cost_per_million: 0
