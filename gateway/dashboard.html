@@ -1,10 +1,52 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gateway operator console</title><link rel="stylesheet" href="/dashboard.css"></head>
-<body><main><p class="eyebrow">MULTI PROVIDER LLM SECURITY GATEWAY</p><h1>Operator console</h1>
-<p>Request counts, quota rejections, provider health, latency and estimated cost. Prompt content is never displayed.</p>
-<label for="key">Operator API key</label><input id="key" type="password" autocomplete="off" placeholder="gw_…">
-<button id="connect">Refresh metrics</button><p id="status" role="status">Enter an operator key to connect.</p>
-<h2>Metrics</h2><dl id="metrics"></dl><h2>Providers</h2><div id="providers"></div>
-<p class="footnote">Keys stay in this page's memory and are cleared on reload. Use HTTPS outside localhost.</p>
-</main><script src="/dashboard.js"></script></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gateway operator console</title>
+  <link rel="stylesheet" href="/dashboard.css">
+</head>
+<body>
+  <header class="page-header">
+    <h1>Operator console</h1>
+    <p>LLM Security Gateway</p>
+  </header>
+  <main class="workspace">
+    <div class="overview">
+      <p class="intro">Traffic, policy enforcement and provider health.</p>
+      <section class="connection" aria-label="Operator access">
+        <label for="key">Operator API key</label>
+        <div class="controls">
+          <input id="key" type="password" autocomplete="off" spellcheck="false"
+                 maxlength="256" aria-describedby="key-help" placeholder="Enter your operator key">
+          <button id="connect" type="button">Refresh metrics</button>
+        </div>
+        <div class="connection-notes">
+          <p id="key-help">Keys are cleared on reload.</p>
+          <p id="status" role="status" aria-live="polite">Enter an operator key to connect.</p>
+        </div>
+      </section>
+      <section class="metrics-section" aria-labelledby="metrics-title">
+        <h2 id="metrics-title">Metrics</h2>
+        <dl id="metrics"></dl>
+        <p class="footnote">Process-local counters reset on restart.</p>
+      </section>
+    </div>
+    <aside class="provider-rail" aria-labelledby="providers-title">
+      <h2 id="providers-title">Providers</h2>
+      <div id="providers" aria-busy="false">
+        <table>
+          <caption class="sr-only">Provider health and circuit state</caption>
+          <thead><tr><th scope="col">Provider</th><th scope="col">Health</th><th scope="col">Circuit</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <p id="provider-empty">Refresh metrics to load provider health.</p>
+      </div>
+      <p class="privacy-note">Prompt content is not displayed.</p>
+      <p class="transport-note">Use HTTPS outside localhost.</p>
+    </aside>
+  </main>
+  <noscript>This console needs JavaScript to load operator metrics.</noscript>
+  <script src="/dashboard.js"></script>
+</body>
+</html>

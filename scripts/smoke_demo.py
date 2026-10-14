@@ -42,7 +42,7 @@ def free_port() -> int:
 
 
 def browser_checks(base: str, operator: str, executable: str | None) -> dict[str, object]:
-    from playwright.sync_api import sync_playwright
+    from playwright.sync_api import expect, sync_playwright
 
     errors = []
     screenshot_directory = Path(tempfile.gettempdir()) / "gateway-dashboard-qa"
@@ -64,17 +64,105 @@ def browser_checks(base: str, operator: str, executable: str | None) -> dict[str
         page.goto(base + "/dashboard")
         assert page.title() == "Gateway operator console"
         assert page.locator("h1").inner_text() == "Operator console"
+        # Missing data must never appear as zero traffic or healthy providers.
+        assert page.locator("#metrics dd").all_text_contents() == ["—"] * 7
+        assert page.locator("#providers tbody tr").count() == 0
+        button = page.get_by_role("button", name="Refresh metrics")
+        button.click()
+        expect(page.get_by_label("Operator API key")).to_be_focused()
         page.get_by_label("Operator API key").fill(operator)
-        page.get_by_role("button", name="Refresh metrics").click()
+        # Keyboard refresh must work without navigating or putting keys in a URL.
+        page.get_by_label("Operator API key").press("Enter")
         page.get_by_role("status").filter(has_text="Updated").wait_for()
-        assert page.locator("#metrics dt").count() >= 5
-        assert "rate limit rejections total" in page.locator("#metrics").inner_text()
-        assert "healthy" in page.locator("#providers").inner_text()
+        assert "Quota rejections" in page.locator("#metrics").inner_text()
+        assert "Healthy" in page.locator("#providers").inner_text()
         assert "a@example.com" not in page.locator("body").inner_text()
-        page.screenshot(path=str(screenshot_directory / "desktop.png"))
+        assert not page.evaluate(
+            "Object.keys(localStorage).length + Object.keys(sessionStorage).length"
+        )
+        page.get_by_label("Operator API key").fill("")
+        page.locator("h1").click()
+        page.screenshot(path=str(screenshot_directory / "desktop.png"), full_page=True)
         page.set_viewport_size({"width": 390, "height": 844})
-        page.screenshot(path=str(screenshot_directory / "mobile.png"))
+        page.screenshot(path=str(screenshot_directory / "mobile.png"), full_page=True)
         assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+        page.reload()
+        expect(page.get_by_label("Operator API key")).to_have_value("")
+        assert page.locator("#metrics dd").all_text_contents() == ["—"] * 7
+
+        # Control only the HTTP boundary to check pending/empty/unavailable states.
+        # The first refresh above used the real application and operator key.
+        pending = []
+        page.route("**/operator/summary", lambda route: pending.append(route))
+        page.get_by_label("Operator API key").fill(operator)
+        button.click()
+        expect(button).to_be_disabled()
+        expect(page.get_by_role("status")).to_contain_text("Refreshing")
+        assert page.locator("#metrics dd").all_text_contents() == ["—"] * 7
+        pending.pop().fulfill(json={"metrics": {}, "providers": {}})
+        expect(button).to_be_enabled()
+        expect(page.locator("#providers")).to_contain_text("No providers reported")
+        assert page.locator("#metrics dd").all_text_contents() == ["—"] * 7
+        button.click()
+        expect(button).to_be_disabled()
+        pending.pop().fulfill(
+            json={
+                "metrics": {
+                    "gateway_requests_total": 12,
+                    "gateway_estimated_cost_dollars_total": 0,
+                },
+                "providers": {"<img src=x>": {"healthy": False, "circuit_open": True}},
+            }
+        )
+        expect(button).to_be_enabled()
+        expect(page.locator("#metrics dd").first).to_have_text("12")
+        expect(page.locator("#metrics dd").nth(4)).to_have_text("$0.00000")
+        expect(page.locator("#providers")).to_contain_text("Unavailable")
+        expect(page.locator("#providers")).to_contain_text("Open")
+        expect(page.locator("#providers")).to_contain_text("<img src=x>")
+        assert page.locator("#providers img").count() == 0
+        button.click()
+        expect(button).to_be_disabled()
+        pending.pop().abort("failed")
+        expect(button).to_be_enabled()
+        expect(page.get_by_role("status")).to_contain_text("Could not refresh")
+        assert page.locator("#metrics dd").all_text_contents() == ["—"] * 7
+        assert page.locator("#providers tbody tr").count() == 0
+        for code, message in [(401, "Access denied"), (403, "Access denied"), (503, "unavailable")]:
+            button.click()
+            expect(button).to_be_disabled()
+            pending.pop().fulfill(status=code, json={"error": {"message": "not for display"}})
+            expect(button).to_be_enabled()
+            expect(page.get_by_role("status")).to_contain_text(message)
+            assert "not for display" not in page.locator("body").inner_text()
+            assert page.locator("#metrics dd").all_text_contents() == ["—"] * 7
+        button.click()
+        expect(button).to_be_disabled()
+        pending.pop().fulfill(status=200, content_type="text/html", body="not for display")
+        expect(button).to_be_enabled()
+        expect(page.get_by_role("status")).to_contain_text("Could not refresh")
+        assert "not for display" not in page.locator("body").inner_text()
+        button.click()
+        expect(button).to_be_disabled()
+        previous_request = pending.pop()
+        with page.expect_event("requestfailed", timeout=1500):
+            page.evaluate("window.dispatchEvent(new Event('pagehide'))")
+        previous_request.fulfill(json={"metrics": {"gateway_requests_total": 99}, "providers": {}})
+        expect(button).to_be_enabled()
+        expect(page.get_by_label("Operator API key")).to_have_value("")
+        expect(page.get_by_role("status")).to_contain_text("Enter an operator key")
+        assert page.locator("#metrics dd").all_text_contents() == ["—"] * 7
+        page.unroute("**/operator/summary")
+        # A deliberate network abort emits a resource error, not a JavaScript failure.
+        expected_resource_errors = (
+            "net::ERR_FAILED",
+            "the server responded with a status of 401",
+            "the server responded with a status of 403",
+            "the server responded with a status of 503",
+        )
+        errors = [
+            error for error in errors if not any(text in error for text in expected_resource_errors)
+        ]
         assert not errors, errors
         browser.close()
     return {

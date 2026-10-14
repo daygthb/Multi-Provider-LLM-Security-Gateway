@@ -9,7 +9,7 @@ Start Docker Desktop and wait until its engine is running. Open PowerShell, then
 ```powershell
 cd 'C:\Projects\Multi Provider LLM Security Gateway'
 . .\scripts\activate-tools.ps1
-docker compose -f docker-compose.yml -f docker-compose.ollama.yml up -d --wait
+docker compose -f docker-compose.yml -f docker-compose.ollama.yml up -d --build --wait
 python scripts/smoke_demo.py --existing
 ```
 
@@ -27,7 +27,7 @@ Open **[localhost:8000/dashboard](http://localhost:8000/dashboard)**. Copy your 
 Get-Content .\data\operator.key -Raw | Set-Clipboard
 ```
 
-Paste it into **Operator API key** and click **Refresh metrics**. Point out request counts, blocked requests and provider health. Do not show the key file or clipboard in a recording; clear the clipboard afterward. The dashboard is for monitoring, not typing chat prompts.
+Paste it into **Operator API key** and click **Refresh metrics**. Point out **Requests**, **Policy blocks**, and the **Providers** panel. Do not show the key file or clipboard in a recording; clear the clipboard afterward. The dashboard is for monitoring, not typing chat prompts. Its counters reset when that API process restarts; a dash means data has not been loaded, not zero traffic.
 
 ## 3. Say this in your own words
 
