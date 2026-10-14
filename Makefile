@@ -27,3 +27,5 @@ linux-verify:
 	docker run --rm --mount "type=bind,source=$(CURDIR),target=/workspace,readonly" --tmpfs /tmp:exec,mode=1777 -e PYTHONDONTWRITEBYTECODE=1 llm-security-gateway-api:latest sh /workspace/scripts/verify_linux.sh
 recovery-test:
 	python scripts/verify_redis_recovery.py
+operations-test:
+	python -m scripts.verify_operations

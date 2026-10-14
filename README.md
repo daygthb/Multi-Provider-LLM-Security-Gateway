@@ -199,6 +199,8 @@ The optional patch disables kubelet certificate verification for this local deve
 
 See [production readiness](docs/production-readiness.md) for the remaining external deployment, provider, recovery, load and security gates. Local verification and passing hosted CI are not a public production deployment.
 
+`make operations-test` runs isolated snapshot restore, key rotation and gateway outage/recovery checks with real Redis and a simulated upstream. See [operations and recovery](docs/operations.md) for prerequisites, safety boundaries, actual mechanics and the production reconciliation checklist.
+
 ```sh
 python -m ruff check .
 python -m ruff format --check .

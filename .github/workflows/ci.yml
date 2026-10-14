@@ -35,5 +35,6 @@ jobs:
           docker compose run --rm --no-deps -v ./scripts:/app/scripts:ro -v ./data:/app/data:ro -e GATEWAY_DEMO_URL=http://api:8000 api python scripts/smoke_demo.py --existing
           docker compose run --rm --no-deps -v ./scripts:/app/scripts:ro api python scripts/verify_live_backends.py
           python scripts/verify_redis_recovery.py
+          python -m scripts.verify_operations
       - if: always()
         run: docker compose down

@@ -1,5 +1,15 @@
 # Verification record
 
+## Local operations rehearsal
+
+`python -m scripts.verify_operations` passed against independent Redis 7.4 containers/volumes. A blank target rejected the generated key before transfer. A completed RDB snapshot was copied to a different volume and the original fixture source container/volume was removed before restore. The replacement key's identity, model/permission scope and 100-token tenant budget survived; the old key remained revoked. Consumed 40 plus pending 20 tokens restored as 60, so a 41-token request was rejected. Finalizing the known pending reservation at 10 twice left 50 consumed, not 40. AOF was bootstrapped from that restored dataset, rewrite completion was checked, and the target was recreated with AOF enabled; identity/revocation and 50 tokens persisted and a 51-token request was rejected.
+
+Through an in-process ASGI HTTP client, the actual gateway used this real Redis fixture: pause produced readiness/chat 503; unpause recovered both to 200. Simulated upstream HTTP 503 opened the circuit, and a healthy completion after the actual cooldown returned 200 and reset failures. Returned errors did not include the test bearer or private upstream detail. This did not deploy a new gateway process/network, call a real upstream provider, or verify production TLS/failover.
+
+A separate fault-injection run deliberately skipped snapshot copying. Restore then failed with invalid_api_key as expected, rather than reporting success. Docker inventory after both runs showed no remaining operations fixture containers or volumes. All bearer values stayed in memory and no backup/key file was written into Git or the host workspace. The running demo was not paused or modified. These results are point-in-time local evidence, not a production RPO/RTO or security approval. [Operations and recovery](operations.md) includes the required post-snapshot usage/revocation reconciliation gate.
+
+The preceding CI-hardening commit `2c52185` also passed [hosted run 38488951801](https://github.com/daygthb/Multi-Provider-LLM-Security-Gateway/actions/runs/38488951801) in 1m53s with zero check annotations, resolving its earlier pending status below. Hosted execution of the new operations stage will be recorded by its own Actions run.
+
 ## Repository rename, CI maintenance and bounded local load check
 
 The private repository is now [daygthb/Multi-Provider-LLM-Security-Gateway](https://github.com/daygthb/Multi-Provider-LLM-Security-Gateway), matching the requested project name with URL-safe hyphens. The local `origin` remote was updated and privacy verified. Existing Compose project/volume names and Kubernetes resources were deliberately not renamed, preserving local data and running services.

@@ -17,3 +17,11 @@ The implementation, local Docker/Kubernetes demo, Ollama route and hosted CI are
 ## No-cost next step
 
 Keep the current local Kubernetes/Ollama setup as a portfolio/demo deployment while the external release inputs are undecided. Do not publish its ports or apply the local Metrics Server TLS-skip patch to production. A real production deployment needs environment-specific credentials and operational choices; those cannot be inferred from a passing build.
+
+## Local operational evidence completed
+
+- [x] Independent snapshot restore after removal of the fixture's original Redis volume, including identity permissions, revoked-key rejection, shared consumed budget and a pending reservation.
+- [x] Key replacement/revocation mechanics without resetting the shared tenant budget, and idempotent reservation finalization after restore.
+- [x] AOF bootstrap/restart of the restored dataset; gateway503 during a real Redis pause and200 after recovery; simulated upstream outage/circuit recovery.
+
+Run `make operations-test` to repeat these isolated checks. [Operations and recovery](operations.md) documents the method, its limits and the production procedure. These local checks do not close the production backup/failover, incident, rollout or release gates above. In particular, post-snapshot usage and revocations must be reconciled before restored data is allowed to admit traffic.
