@@ -35,9 +35,9 @@ python -m venv .venv
 .\.venv\Scripts\python.exe scripts/smoke_demo.py
 ```
 
-This starts temporary local servers and verifies JSON/SSE responses, email redaction, a blocked request, missing-key rejection and metrics. It then stops those servers. No Docker, Redis server or model download is required for this smoke test. macOS/Linux commands and a persistent live demo are in the [demo guide](docs/demo.md).
+This starts temporary local servers and verifies JSON/SSE responses, email redaction, a blocked request, missing-key rejection and metrics. It then stops those servers. No Docker, Redis server or model download is required for this smoke test. [macOS/Linux setup](docs/reference.md#local-setup-python-312) · [Keep a live demo running](docs/demo.md)
 
-**Show it to someone:** follow the [two-minute walkthrough](docs/demo.md#two-minute-walkthrough). On the configured local Compose setup, the operator console is at [localhost:8000/dashboard](http://localhost:8000/dashboard) and Grafana at [localhost:3000](http://localhost:3000). These are local addresses, not public demo links.
+**Show it to someone:** follow the [easy two-minute walkthrough](docs/demo.md). On the configured local Compose setup, the operator console is at [localhost:8000/dashboard](http://localhost:8000/dashboard) and Grafana at [localhost:3000](http://localhost:3000). These are local addresses, not public demo links.
 
 ![Operator console showing actual local metrics and provider health, with the key field cleared](docs/assets/operator-console.png)
 

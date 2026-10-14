@@ -28,6 +28,15 @@ Protected streaming buffers upstream text before sending SSE events; it does not
 
 ## Local setup (Python 3.12+)
 
+macOS/Linux:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install --constraint requirements.lock --upgrade pip
+.venv/bin/python -m pip install --constraint requirements.lock -e '.[dev]'
+.venv/bin/python scripts/smoke_demo.py
+```
+
 PowerShell:
 
 ```powershell
