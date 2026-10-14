@@ -1,5 +1,13 @@
 # Verification record
 
+## Portfolio presentation verification
+
+The README was shortened for SWE/AI-infrastructure portfolio review, while its complete technical content was preserved in [reference.md](reference.md). [demo.md](demo.md) provides a two-minute walkthrough and startup/troubleshooting instructions; [career.md](career.md) provides accurate résumé templates, architecture questions and explicit AI-assistance/model-training limitations. Repository visibility remains private; no public hosting or paid service was added.
+
+The documented existing-stack startup succeeded. Its HTTP smoke passed JSON 200, SSE 200, policy 403, missing bearer 401 and metrics 200. The PowerShell walkthrough was executed against the running Compose API: the allowed request returned `Mock response: Hello [REDACTED:email]`, without the supplied synthetic email, and the rule-triggering request returned 403. The draft's 32-token limit clipped the mock's displayed marker; the example was corrected to 64 and rechecked before delivery. Real Redis atomic budget/refund/rate/revocation checks passed again, and actual local `qwen2.5-coder:7b` gateway calls returned JSON 200/SSE 200.
+
+The independent Python/browser smoke also passed with sanitized audit output. Browser plugin was not available, so existing Playwright 1.63/Edge were used: page identity and meaningful content, authenticated Refresh metrics interaction, populated provider health and metrics, no app console errors, and no horizontal overflow at 1280x900 and 390x844. Actual desktop/mobile screenshots were visually inspected. Portfolio assets contain a real dashboard screenshot with the key input cleared and a short silent dashboard clip (not a full narrated API demo); no prompt bodies or raw bearer values are shown. No new browser dependency or application behavior was introduced. The Compose stack is left running for the user to present.
+
 ## Local operations rehearsal
 
 `python -m scripts.verify_operations` passed against independent Redis 7.4 containers/volumes. A blank target rejected the generated key before transfer. A completed RDB snapshot was copied to a different volume and the original fixture source container/volume was removed before restore. The replacement key's identity, model/permission scope and 100-token tenant budget survived; the old key remained revoked. Consumed 40 plus pending 20 tokens restored as 60, so a 41-token request was rejected. Finalizing the known pending reservation at 10 twice left 50 consumed, not 40. AOF was bootstrapped from that restored dataset, rewrite completion was checked, and the target was recreated with AOF enabled; identity/revocation and 50 tokens persisted and a 51-token request was rejected.
