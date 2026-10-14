@@ -197,6 +197,8 @@ The optional patch disables kubelet certificate verification for this local deve
 
 ## Verification and CI
 
+See [production readiness](docs/production-readiness.md) for the remaining external deployment, provider, recovery, load and security gates. Local verification and passing hosted CI are not a public production deployment.
+
 ```sh
 python -m ruff check .
 python -m ruff format --check .

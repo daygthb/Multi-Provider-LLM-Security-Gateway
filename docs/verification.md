@@ -1,5 +1,19 @@
 # Verification record
 
+## Repository rename, CI maintenance and bounded local load check
+
+The private repository is now [daygthb/Multi-Provider-LLM-Security-Gateway](https://github.com/daygthb/Multi-Provider-LLM-Security-Gateway), matching the requested project name with URL-safe hyphens. The local `origin` remote was updated and privacy verified. Existing Compose project/volume names and Kubernetes resources were deliberately not renamed, preserving local data and running services.
+
+CI now pins [checkout v7.0.1](https://github.com/actions/checkout/releases/tag/v7.0.1) and [setup-python v7.0.0](https://github.com/actions/setup-python/releases/tag/v7.0.0) to the full commit SHAs verified through GitHub's official tag API. Both official action manifests use Node24. Checkout persistence is disabled, the runner is fixed to `ubuntu-24.04`, and the job has a 15-minute bound. This addresses the runtime/image migration warnings from the first runs below; hosted verification of the updated workflow is required before claiming it passes. Local actionlint and the full `make verify` gate passed after these configuration changes: 48 tests, 94.42% coverage, clean lint/format/mypy, dependency audit and manifests.
+
+A one-off bounded load check used the already-running single Compose API instance, its real Redis (`appendfsync=always`) and mock upstream. The client ran inside the API container against loopback HTTP, with five warmup requests and three bursts of 200 authenticated JSON requests using `max_tokens=32`, a small benign prompt, connection reuse, and concurrency 1, 4 and 16. A random model-restricted tenant/key had deliberately high test quotas; every request returned HTTP200 with nonempty completion content. No paid endpoint was called.
+
+- Concurrency 1: 200 requests in 1.306s, observed 153.18 requests/s; latency p50=6.15ms, p95=8.83ms, p99=10.20ms.
+- Concurrency 4: 200 requests in 0.810s, observed 246.99 requests/s; latency p50=13.05ms, p95=17.92ms, p99=161.60ms.
+- Concurrency 16: 200 requests in 0.462s, observed 432.61 requests/s; latency p50=34.42ms, p95=47.65ms, p99=73.59ms.
+
+These are single short local bursts, not sustained throughput, saturation, WAN/TLS, SSE, long-prompt, real model inference or production measurements. Latency starts after admission to the client concurrency semaphore and excludes its queue wait. Percentiles use nearest rank over each burst. The harness was executed from standard input without creating source/key files; all identity and tenant-hash quota keys belonging to its random temporary tenant were removed, and absence of those quota keys was checked afterward. Existing demo identities and budgets were untouched. Production capacity and SLOs remain unverified.
+
 Verified locally on 2026-10-13 using Windows, PowerShell and Python 3.12.10. The binding scope is the original attachment summarized in `specification.md`; the implementation plan is `superpowers/plans/2026-10-13-gateway.md`.
 
 ## Actual results
