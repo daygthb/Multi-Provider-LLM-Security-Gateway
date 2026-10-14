@@ -1,6 +1,6 @@
 # Technical reference
 
-This is the detailed reference for [Multi Provider LLM Security Gateway](../README.md). Run commands from the repository root. For the short presentation path, see the [demo guide](demo.md).
+This is the detailed reference for [Multi Provider LLM Security Gateway](../README.md). Run commands from the repository root. For a short setup guide, see [Run locally](demo.md).
 
 A typed FastAPI reverse proxy providing a tenant-aware OpenAI-compatible chat API for OpenAI, Ollama and a deterministic mock. It combines hashed API keys, distributed quotas, configurable prompt/response policies, provider fallback, audit logs and an operator console. The included demo requires no paid credentials.
 

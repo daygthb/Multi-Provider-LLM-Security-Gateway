@@ -2,14 +2,16 @@
 
 A Python/FastAPI gateway that applies authentication, shared usage limits, and configurable security checks before forwarding chat requests to an LLM provider.
 
-Built as a **SWE and AI-infrastructure portfolio project**. The local demo works without paid API keys. Real local inference is available through Ollama; the deterministic mock makes demonstrations repeatable.
+Run locally without paid API keys using the mock provider, or use Ollama for local inference. An OpenAI adapter is also included.
 
-## What it demonstrates
+## Features
 
-- **Backend engineering:** typed APIs, dependency injection, consistent errors, retries, fallback and circuit breakers.
-- **Shared state:** Redis Lua scripts enforce atomic rate limits and tenant-wide token budgets.
-- **Security tradeoffs:** hashed API keys, model permissions, PII redaction, configurable request/response rules and content-free audit logs.
-- **Delivery:** Docker Compose, local Kubernetes manifests, Prometheus/Grafana and GitHub Actions.
+- API-key authentication and model permissions.
+- Shared rate limits and token budgets using Redis.
+- Configurable request/response filtering and PII redaction.
+- Provider retries, fallback and circuit breakers.
+- An operator dashboard, Prometheus metrics and content-free audit logs.
+- Docker Compose and Kubernetes configuration.
 
 ```mermaid
 flowchart LR
@@ -37,23 +39,23 @@ python -m venv .venv
 
 This starts temporary local servers and verifies JSON/SSE responses, email redaction, a blocked request, missing-key rejection and metrics. It then stops those servers. No Docker, Redis server or model download is required for this smoke test. [macOS/Linux setup](docs/reference.md#local-setup-python-312) · [Keep a live demo running](docs/demo.md)
 
-**Show it to someone:** follow the [easy two-minute walkthrough](docs/demo.md). On the configured local Compose setup, the operator console is at [localhost:8000/dashboard](http://localhost:8000/dashboard) and Grafana at [localhost:3000](http://localhost:3000). These are local addresses, not public demo links.
+## Dashboard
+
+Follow the [local setup guide](docs/demo.md) to keep the app running. With Docker Compose, the operator console is at [localhost:8000/dashboard](http://localhost:8000/dashboard) and Grafana at [localhost:3000](http://localhost:3000).
 
 ![Operator console showing actual local metrics and provider health, with the key field cleared](docs/assets/operator-console.png)
 
-[Silent dashboard preview](docs/assets/dashboard-preview.webm). This shows the real operator console, not the full API walkthrough or a public deployment.
+[Dashboard preview](docs/assets/dashboard-preview.webm).
 
-## Verified, with limits
+## Testing and limitations
 
-48 tests pass with **94.42% combined statement/branch coverage**. Hosted CI runs lint, typing, tests, dependency audit, image build, Compose smoke tests and isolated Redis recovery/restore checks. [CI runs](https://github.com/daygthb/Multi-Provider-LLM-Security-Gateway/actions) · [Detailed evidence](docs/verification.md)
+GitHub Actions runs lint, type checks, tests, dependency checks, Docker builds and integration checks. See [CI runs](https://github.com/daygthb/Multi-Provider-LLM-Security-Gateway/actions) and the [verification notes](docs/verification.md) for recorded results.
 
 Local Ollama JSON/SSE, Docker Compose and Docker Desktop Kubernetes have been exercised. Paid OpenAI calls and public production hosting have not. Pattern-based filters are not a guarantee against prompt injection. Responses are fully buffered and scanned before SSE delivery; this trades streaming latency for pre-delivery inspection. Short mock load checks do not establish production capacity.
 
-## Explore
+## Documentation
 
-- [Demo and troubleshooting](docs/demo.md)
-- [Résumé bullets and interview preparation](docs/career.md)
+- [Local setup and troubleshooting](docs/demo.md)
 - [API, configuration, architecture and limitations](docs/reference.md)
-- [Recovery procedures](docs/operations.md) · [Production-only release gates](docs/production-readiness.md)
-
-This project demonstrates inference integration and backend reliability, not model training or fine-tuning. For an interview, focus on what you understand, tested and can change; describe any AI assistance honestly.
+- [Operations and recovery](docs/operations.md)
+- [Production considerations](docs/production-readiness.md)

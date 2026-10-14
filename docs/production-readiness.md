@@ -1,6 +1,6 @@
 # Production readiness
 
-The implementation, local Docker/Kubernetes demo, Ollama route and hosted CI are verified as recorded in [verification.md](verification.md). This does not mean the service is deployed or approved for public production use. The private source repository is [Multi-Provider-LLM-Security-Gateway](https://github.com/daygthb/Multi-Provider-LLM-Security-Gateway).
+Local Docker/Kubernetes, Ollama and CI checks are recorded in [verification.md](verification.md). Public production hosting has not been verified.
 
 ## Remaining release gates
 
@@ -16,7 +16,7 @@ The implementation, local Docker/Kubernetes demo, Ollama route and hosted CI are
 
 ## No-cost next step
 
-Keep the current local Kubernetes/Ollama setup as a portfolio/demo deployment while the external release inputs are undecided. Do not publish its ports or apply the local Metrics Server TLS-skip patch to production. A real production deployment needs environment-specific credentials and operational choices; those cannot be inferred from a passing build.
+Use the current Kubernetes/Ollama setup for local development. Production deployment needs environment-specific credentials, networking and operational choices. The local Metrics Server TLS-skip patch is only for local development.
 
 ## Local operational evidence completed
 
